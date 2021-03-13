@@ -30,7 +30,4 @@ export class Bug extends BaseEntity {
 
     @UpdateDateColumn()
     updated_at: Date
-
-
-    
 }
