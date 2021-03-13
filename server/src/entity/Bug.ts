@@ -19,13 +19,18 @@ export class Bug extends BaseEntity {
     @Column()
     priority: number
 
+    @Column({default: false})
+    is_completed: boolean
+
+    @Column({nullable: true, default: null})
+    resolution?: string
+
     @CreateDateColumn()
     created_at: Date
 
     @UpdateDateColumn()
     updated_at: Date
 
-    @Column({default: false})
-    is_completed: boolean
+
     
 }
