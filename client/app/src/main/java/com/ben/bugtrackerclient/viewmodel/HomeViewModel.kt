@@ -11,7 +11,6 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel(private val bugRepository: BugRepository) : ViewModel() {
 
-
     private val _bugList = MutableLiveData<ResponseHandler<List<Bug>>>()
     val bugList: LiveData<ResponseHandler<List<Bug>>>
         get() = _bugList
