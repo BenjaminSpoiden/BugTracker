@@ -11,10 +11,6 @@ import kotlinx.coroutines.launch
 
 class HomeViewModel(private val bugRepository: BugRepository) : ViewModel() {
 
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is home Fragment"
-    }
-    val text: LiveData<String> = _text
 
     private val _bugList = MutableLiveData<ResponseHandler<List<Bug>>>()
     val bugList: LiveData<ResponseHandler<List<Bug>>>
@@ -22,5 +18,8 @@ class HomeViewModel(private val bugRepository: BugRepository) : ViewModel() {
 
     fun onFetchBugs() = viewModelScope.launch {
         _bugList.value = bugRepository.onFetchBugs()
+    }
+    fun onAddBug(bugData: Bug) = viewModelScope.launch {
+        bugRepository.onAddBug(bugData)
     }
 }
