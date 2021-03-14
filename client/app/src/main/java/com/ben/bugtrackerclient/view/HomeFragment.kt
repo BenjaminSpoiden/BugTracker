@@ -99,7 +99,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugReposit
             viewModel.deleteBugResponse.collect {
                 when(it) {
                     is ResponseHandler.Success -> {
-                        Log.d("Tag", "${it.value.string()}")
+                        Log.d("Tag", "${onConvertBodyToJson<CustomResponse>(it.value)}")
                     }
                     is ResponseHandler.Failure -> {
                         it.responseBody?.let { responseBody ->
