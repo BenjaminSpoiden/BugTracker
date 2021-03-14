@@ -10,7 +10,7 @@ import retrofit2.http.POST
 interface BugTrackerService {
 
     @GET("/bugs")
-    suspend fun onFetchBugs(): List<Bug>
+    suspend fun onFetchBugs(): MutableList<Bug>
 
     @POST("/addBug")
     suspend fun onAddBug(@Body request: BugRequest): BugResponse

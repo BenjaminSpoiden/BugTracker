@@ -15,4 +15,5 @@ sealed class ResponseHandler<out T> {
         val message: String? = null
     ): ResponseHandler<Nothing>()
     object Loading: ResponseHandler<Nothing>()
+    object Empty: ResponseHandler<Nothing>()
 }

@@ -20,7 +20,9 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/bug_rv"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:layout_marginBottom="50dp"
+        />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/add_bug_layout"
