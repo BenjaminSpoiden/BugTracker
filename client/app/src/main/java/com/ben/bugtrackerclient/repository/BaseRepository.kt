@@ -1,10 +1,10 @@
 package com.ben.bugtrackerclient.repository
 
+import com.ben.bugtrackerclient.model.CustomResponse
 import com.ben.bugtrackerclient.network.ResponseHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
-import java.lang.Exception
 
 abstract class BaseRepository {
 

@@ -8,9 +8,12 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewbinding.ViewBinding
+import com.ben.bugtrackerclient.model.CustomResponse
 import com.ben.bugtrackerclient.network.BugTrackerNetwork
 import com.ben.bugtrackerclient.repository.BaseRepository
 import com.ben.bugtrackerclient.viewmodel.factory.ViewModelFactory
+import okhttp3.ResponseBody
+import kotlin.reflect.KClass
 
 abstract class BaseFragment<VM: ViewModel, VB: ViewBinding, R: BaseRepository>: Fragment() {
 
@@ -27,6 +30,10 @@ abstract class BaseFragment<VM: ViewModel, VB: ViewBinding, R: BaseRepository>: 
         val viewModelFactory = ViewModelFactory(onBindRepository())
         viewModel = ViewModelProvider(this, viewModelFactory).get(onBindViewModel())
         return binding.root
+    }
+
+    protected inline fun <reified C> onConvertBodyToJson(responseBody: ResponseBody): C? {
+        return bugTrackerNetwork.gson.fromJson(responseBody.string(), C::class.java)
     }
 
     abstract fun onBindFragment(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): VB

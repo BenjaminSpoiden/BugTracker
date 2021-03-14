@@ -8,13 +8,26 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
+import kotlin.math.log
 
 object BugTrackerNetwork {
 
-    private val gson: Gson by lazy {
+    val gson: Gson by lazy {
         GsonBuilder()
             .setLenient()
             .create()
+    }
+
+    private val client by lazy {
+        OkHttpClient
+                .Builder()
+                .also {
+                    if(BuildConfig.DEBUG) {
+                        val logging = HttpLoggingInterceptor()
+                        logging.setLevel(HttpLoggingInterceptor.Level.BODY)
+                        it.addInterceptor(logging)
+                    }
+                }.build()
     }
 
     fun initializeRetrofit(): BugTrackerService {
@@ -35,6 +48,7 @@ object BugTrackerNetwork {
 //                }
 //                .build())
             .baseUrl("http://10.0.2.2:3000")
+            .client(client)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addConverterFactory(ScalarsConverterFactory.create())
             .build()
