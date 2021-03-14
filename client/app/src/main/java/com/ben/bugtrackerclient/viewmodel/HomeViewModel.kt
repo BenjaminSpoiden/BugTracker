@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.ResponseBody
 import okhttp3.internal.wait
 
 class HomeViewModel(private val bugRepository: BugRepository) : ViewModel() {
@@ -27,6 +28,10 @@ class HomeViewModel(private val bugRepository: BugRepository) : ViewModel() {
     private val _addBugResponse = MutableStateFlow<ResponseHandler<BugResponse>>(ResponseHandler.Empty)
     val addBugResponse: StateFlow<ResponseHandler<BugResponse>>
         get() = _addBugResponse
+
+    private val _deleteBugResponse = MutableStateFlow<ResponseHandler<ResponseBody>>(ResponseHandler.Empty)
+    val deleteBugResponse: StateFlow<ResponseHandler<ResponseBody>>
+        get() = _deleteBugResponse
 
     fun onFetchBugs() = viewModelScope.launch {
         _bugList.value = ResponseHandler.Loading
@@ -41,6 +46,17 @@ class HomeViewModel(private val bugRepository: BugRepository) : ViewModel() {
             _addBugResponse.value = bugRepository.onAddBug(bugData)
             onFetchBugs()
         }
-
+    }
+    fun onDeleteBug(id: Int) = viewModelScope.launch {
+        _deleteBugResponse.value = ResponseHandler.Loading
+        _deleteBugResponse.value = bugRepository.onDeleteBug(id)
+        _deleteBugResponse.value.also {
+           when(it) {
+               is ResponseHandler.Success -> {
+                   onFetchBugs()
+               }
+               else -> Unit
+           }
+        }
     }
 }

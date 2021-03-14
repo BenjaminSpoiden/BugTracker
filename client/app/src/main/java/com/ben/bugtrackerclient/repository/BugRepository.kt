@@ -12,4 +12,8 @@ class BugRepository(private val networkService: BugTrackerService): BaseReposito
     suspend fun onAddBug(bugData: BugRequest) = handleApiCall {
         networkService.onAddBug(bugData)
     }
+
+    suspend fun onDeleteBug(id: Int) = handleApiCall {
+        networkService.onDeleteBug(id)
+    }
 }

@@ -30,6 +30,7 @@ import com.ben.bugtrackerclient.repository.BugRepository
 import com.ben.bugtrackerclient.utils.enabled
 import com.ben.bugtrackerclient.utils.visible
 import com.ben.bugtrackerclient.view.adapter.BugAdapter
+import com.ben.bugtrackerclient.view.adapter.onItemClickListener
 import com.ben.bugtrackerclient.viewmodel.HomeViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.flow.collect
@@ -56,6 +57,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugReposit
         (binding.bugPriorityTextField.editText as? AutoCompleteTextView)?.setAdapter(bottomSheetPriorityAdapter)
         onAddChangeListener(bottomSheetPriorityItems)
         onAddBug()
+        onDeleteBug()
     }
 
     private fun onAddChangeListener(bottomSheetPriorityItems: List<String>) {
@@ -86,6 +88,33 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugReposit
         binding.bugPriorityTextInput.setOnItemClickListener { _, _, position, _ ->
             priority = Priority.valueOf(bottomSheetPriorityItems[position]).priority
 
+        }
+    }
+
+    private fun onDeleteBug() {
+        onItemClickListener = {
+            viewModel.onDeleteBug(it)
+        }
+        lifecycleScope.launchWhenCreated {
+            viewModel.deleteBugResponse.collect {
+                when(it) {
+                    is ResponseHandler.Success -> {
+                        Log.d("Tag", "${it.value.string()}")
+                    }
+                    is ResponseHandler.Failure -> {
+                        it.responseBody?.let { responseBody ->
+                            Log.d("Tag", "${onConvertBodyToJson<CustomResponse>(responseBody)}")
+                        }
+                        it.message?.let { message ->
+                            Log.d("Tag", message)
+                        }
+                    }
+                    is ResponseHandler.Loading -> {
+                        Log.d("Tag", "Loading...")
+                    }
+                    else -> Unit
+                }
+            }
         }
     }
 

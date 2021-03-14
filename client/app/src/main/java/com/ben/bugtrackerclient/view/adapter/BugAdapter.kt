@@ -1,27 +1,26 @@
 package com.ben.bugtrackerclient.view.adapter
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.ben.bugtrackerclient.R
+import com.ben.bugtrackerclient.databinding.BugItemBinding
 import com.ben.bugtrackerclient.model.Bug
 import com.ben.bugtrackerclient.model.DataItem
 import com.ben.bugtrackerclient.model.Priority
 import com.ben.bugtrackerclient.model.RowType
-import com.google.android.material.textview.MaterialTextView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.lang.ClassCastException
 import java.text.SimpleDateFormat
 import java.util.*
+
+var onItemClickListener: ((Int) -> Unit)? = null
 
 class BugAdapter: ListAdapter<DataItem, RecyclerView.ViewHolder>(BugDiffCallback()) {
 
@@ -46,7 +45,7 @@ class BugAdapter: ListAdapter<DataItem, RecyclerView.ViewHolder>(BugDiffCallback
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
        when(val bugRow = getItem(position)) {
            is DataItem.HeaderItem -> (holder as TextViewHolder).onBind(bugRow)
-           is DataItem.BugItem -> (holder as BugViewHolder).onBind(bugRow)
+           is DataItem.BugItem -> (holder as BugViewHolder).onBind(bugRow, position)
        }
     }
 
@@ -74,30 +73,35 @@ class BugAdapter: ListAdapter<DataItem, RecyclerView.ViewHolder>(BugDiffCallback
         }
     }
 
-    class BugViewHolder(v: View): RecyclerView.ViewHolder(v) {
+    class BugViewHolder private constructor(private val binding: BugItemBinding): RecyclerView.ViewHolder(binding.root) {
         companion object {
             fun from(parent: ViewGroup): BugViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
-                val view = layoutInflater.inflate(R.layout.bug_item, parent, false)
+                val view = BugItemBinding.inflate(layoutInflater, parent, false)
                 return BugViewHolder(view)
             }
         }
 
-        private val bugName: MaterialTextView = v.findViewById(R.id.bug_name)
-        private val bugDesc: MaterialTextView = v.findViewById(R.id.bug_desc)
-        private val bugCreatedAt: MaterialTextView = v.findViewById(R.id.bug_createdAt)
-        private val bugUpdatedAt: MaterialTextView = v.findViewById(R.id.bug_updatedAt)
-        private val bugVersion: MaterialTextView = v.findViewById(R.id.bug_version)
+//        private val bugName: MaterialTextView = v.findViewById(R.id.bug_name)
+//        private val bugDesc: MaterialTextView = v.findViewById(R.id.bug_desc)
+//        private val bugCreatedAt: MaterialTextView = v.findViewById(R.id.bug_createdAt)
+//        private val bugUpdatedAt: MaterialTextView = v.findViewById(R.id.bug_updatedAt)
+//        private val bugVersion: MaterialTextView = v.findViewById(R.id.bug_version)
 
         @SuppressLint("SetTextI18n")
-        fun onBind(bugItem: DataItem.BugItem) {
+        fun onBind(bugItem: DataItem.BugItem, position: Int) {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.FRANCE)
             val outputFormat = SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss", Locale.FRANCE)
-            bugName.text = bugItem.bug.name
-            bugDesc.text = bugItem.bug.details
-            bugVersion.text = "Version: ${bugItem.bug.version}"
-            bugCreatedAt.text = outputFormat.format(inputFormat.parse(bugItem.bug.createdAt ?: "") ?: "")
-            bugUpdatedAt.text = outputFormat.format(inputFormat.parse(bugItem.bug.updatedAt ?: "") ?: "")
+
+            binding.deleteBug.setOnClickListener {
+                bugItem.id?.toInt()?.let { it1 -> onItemClickListener?.invoke(it1) }
+            }
+
+            binding.bugName.text = bugItem.bug.name
+            binding.bugDesc.text = bugItem.bug.details
+            binding.bugVersion.text = "Version: ${bugItem.bug.version}"
+            binding.bugCreatedAt.text = outputFormat.format(inputFormat.parse(bugItem.bug.createdAt ?: "") ?: "")
+            binding.bugUpdatedAt.text = outputFormat.format(inputFormat.parse(bugItem.bug.updatedAt ?: "") ?: "")
         }
     }
 }
