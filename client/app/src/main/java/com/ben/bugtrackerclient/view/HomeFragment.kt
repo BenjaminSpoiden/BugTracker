@@ -13,7 +13,10 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.ben.bugtrackerclient.R
 import com.ben.bugtrackerclient.databinding.FragmentHomeBinding
 import com.ben.bugtrackerclient.model.Bug
@@ -26,8 +29,11 @@ import com.ben.bugtrackerclient.network.ResponseHandler
 import com.ben.bugtrackerclient.repository.BugRepository
 import com.ben.bugtrackerclient.utils.enabled
 import com.ben.bugtrackerclient.utils.visible
+import com.ben.bugtrackerclient.view.adapter.BugAdapter
+import com.ben.bugtrackerclient.view.adapter.onItemClickListener
 import com.ben.bugtrackerclient.viewmodel.HomeViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import kotlinx.coroutines.flow.collect
 import kotlin.properties.Delegates
 
 class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugRepository>() {
@@ -37,17 +43,21 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugReposit
     }
 
     private var priority: Int? = null
+    private val bugAdapter = BugAdapter()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.sendBugBtn.enabled(false)
-        onFetchBugs()
+
+
+        onSetupRecyclerView()
         setBottomSheetBehavior()
         val bottomSheetPriorityItems = listOf(Priority.LOW.name, Priority.MEDIUM.name, Priority.HIGH.name)
         val bottomSheetPriorityAdapter = ArrayAdapter(requireContext(), R.layout.priority_items, bottomSheetPriorityItems)
         (binding.bugPriorityTextField.editText as? AutoCompleteTextView)?.setAdapter(bottomSheetPriorityAdapter)
         onAddChangeListener(bottomSheetPriorityItems)
         onAddBug()
+        onDeleteBug()
     }
 
     private fun onAddChangeListener(bottomSheetPriorityItems: List<String>) {
@@ -81,24 +91,53 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugReposit
         }
     }
 
+    private fun onDeleteBug() {
+        onItemClickListener = {
+            viewModel.onDeleteBug(it)
+        }
+        lifecycleScope.launchWhenCreated {
+            viewModel.deleteBugResponse.collect {
+                when(it) {
+                    is ResponseHandler.Success -> {
+                        Log.d("Tag", "${onConvertBodyToJson<CustomResponse>(it.value)}")
+                    }
+                    is ResponseHandler.Failure -> {
+                        it.responseBody?.let { responseBody ->
+                            Log.d("Tag", "${onConvertBodyToJson<CustomResponse>(responseBody)}")
+                        }
+                        it.message?.let { message ->
+                            Log.d("Tag", message)
+                        }
+                    }
+                    is ResponseHandler.Loading -> {
+                        Log.d("Tag", "Loading...")
+                    }
+                    else -> Unit
+                }
+            }
+        }
+    }
+
     private fun onFetchBugs() {
         viewModel.onFetchBugs()
-        viewModel.bugList.observe(viewLifecycleOwner) {
-            when(it) {
-                is ResponseHandler.Success -> {
-                    Log.d("Tag", "${it.value}")
-                }
-                is ResponseHandler.Failure -> {
-
-                    it.responseBody?.let { responseBody ->
-                        Log.d("Tag", "${onConvertBodyToJson<CustomResponse>(responseBody)}")
+        lifecycleScope.launchWhenStarted {
+            viewModel.bugList.collect {
+                when(it) {
+                    is ResponseHandler.Success -> {
+                        bugAdapter.onAddHeaderAndItems(it.value)
                     }
-                    it.message?.let { message ->
-                        Log.d("Tag", message)
+                    is ResponseHandler.Failure -> {
+                        it.responseBody?.let { responseBody ->
+                            Log.d("Tag", "${onConvertBodyToJson<CustomResponse>(responseBody)}")
+                        }
+                        it.message?.let { message ->
+                            Log.d("Tag", message)
+                        }
                     }
-                }
-                is ResponseHandler.Loading -> {
-                    Log.d("Tag", "Loading...")
+                    is ResponseHandler.Loading -> {
+                        Log.d("Tag", "Loading...")
+                    }
+                    else -> Unit
                 }
             }
         }
@@ -117,24 +156,26 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugReposit
                     )
             )
         }
-        viewModel.addBugResponse.observe(viewLifecycleOwner) {
-            when(it) {
-                is ResponseHandler.Success -> {
-                    Log.d("Tag", "${it.value}")
-                    binding.progressIndicator.visible(false)
-                }
-                is ResponseHandler.Failure -> {
-                    Log.d("Tag", "$it")
-                    binding.progressIndicator.visible(false)
-                    it.responseBody?.let { responseBody ->
-                        Log.d("Tag", "Failed: ${onConvertBodyToJson<CustomResponse>(responseBody)}")
+        lifecycleScope.launchWhenCreated {
+            viewModel.addBugResponse.collect {
+                when(it) {
+                    is ResponseHandler.Success -> {
+                        binding.progressIndicator.visible(false)
                     }
-                    it.message?.let { message ->
-                        Log.d("Tag", "message: $message")
+                    is ResponseHandler.Failure -> {
+                        Log.d("Tag", "$it")
+                        binding.progressIndicator.visible(false)
+                        it.responseBody?.let { responseBody ->
+                            Log.d("Tag", "Failed: ${onConvertBodyToJson<CustomResponse>(responseBody)}")
+                        }
+                        it.message?.let { message ->
+                            Log.d("Tag", "message: $message")
+                        }
                     }
-                }
-                is ResponseHandler.Loading -> {
-                    Log.d("Tag", "Loading...")
+                    is ResponseHandler.Loading -> {
+                        Log.d("Tag", "Loading...")
+                    }
+                    else -> Unit
                 }
             }
         }
@@ -172,6 +213,16 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugReposit
                 }
             }
         })
+    }
+
+    private fun onSetupRecyclerView() {
+
+        binding.bugRv.apply {
+            this.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+            this.adapter = bugAdapter
+            this.setItemViewCacheSize(0)
+        }
+        onFetchBugs()
     }
 
     override fun onBindFragment(
