@@ -1,6 +1,6 @@
 package com.ben.bugtrackerclient.repository
 
-import com.ben.bugtrackerclient.model.Bug
+import com.ben.bugtrackerclient.model.BugRequest
 import com.ben.bugtrackerclient.network.BugTrackerService
 
 class BugRepository(private val networkService: BugTrackerService): BaseRepository() {
@@ -9,7 +9,7 @@ class BugRepository(private val networkService: BugTrackerService): BaseReposito
         networkService.onFetchBugs()
     }
 
-    suspend fun onAddBug(bugData: Bug) = handleApiCall {
+    suspend fun onAddBug(bugData: BugRequest) = handleApiCall {
         networkService.onAddBug(bugData)
     }
 }

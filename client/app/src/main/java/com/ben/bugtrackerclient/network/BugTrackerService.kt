@@ -1,6 +1,7 @@
 package com.ben.bugtrackerclient.network
 
 import com.ben.bugtrackerclient.model.Bug
+import com.ben.bugtrackerclient.model.BugRequest
 import com.ben.bugtrackerclient.model.BugResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -12,5 +13,5 @@ interface BugTrackerService {
     suspend fun onFetchBugs(): List<Bug>
 
     @POST("/addBug")
-    suspend fun onAddBug(@Body request: Bug): BugResponse
+    suspend fun onAddBug(@Body request: BugRequest): BugResponse
 }
