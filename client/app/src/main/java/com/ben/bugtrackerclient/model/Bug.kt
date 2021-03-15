@@ -16,5 +16,6 @@ data class Bug(
     val priority: Int?,
     @SerializedName("updated_at")
     val updatedAt: String?,
-    val version: String?
+    val version: String?,
+    val creator: User? = null
 )

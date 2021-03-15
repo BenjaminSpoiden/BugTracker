@@ -1,8 +1,6 @@
 package com.ben.bugtrackerclient.network
 
-import com.ben.bugtrackerclient.model.Bug
-import com.ben.bugtrackerclient.model.BugRequest
-import com.ben.bugtrackerclient.model.BugResponse
+import com.ben.bugtrackerclient.model.*
 import okhttp3.ResponseBody
 import retrofit2.http.*
 
@@ -16,4 +14,10 @@ interface BugTrackerService {
 
     @DELETE("/deleteBug/{id}")
     suspend fun onDeleteBug(@Path("id") id: Int): ResponseBody
+
+    @POST("/login")
+    suspend fun onLogin(@Body credentials: LoginRequest): LoginResponse
+
+    @POST("/signup")
+    suspend fun onRegister(@Body credentials: LoginRequest): LoginResponse
 }

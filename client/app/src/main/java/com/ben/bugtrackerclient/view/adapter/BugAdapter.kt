@@ -1,6 +1,7 @@
 package com.ben.bugtrackerclient.view.adapter
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -91,7 +92,7 @@ class BugAdapter: ListAdapter<DataItem, RecyclerView.ViewHolder>(BugDiffCallback
         @SuppressLint("SetTextI18n")
         fun onBind(bugItem: DataItem.BugItem, position: Int) {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.FRANCE)
-            val outputFormat = SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss", Locale.FRANCE)
+            val outputFormat = SimpleDateFormat("MM/DD/YYYY", Locale.FRANCE)
 
             binding.deleteBug.setOnClickListener {
                 bugItem.id?.toInt()?.let { it1 -> onItemClickListener?.invoke(it1) }
@@ -100,8 +101,9 @@ class BugAdapter: ListAdapter<DataItem, RecyclerView.ViewHolder>(BugDiffCallback
             binding.bugName.text = bugItem.bug.name
             binding.bugDesc.text = bugItem.bug.details
             binding.bugVersion.text = "Version: ${bugItem.bug.version}"
-            binding.bugCreatedAt.text = outputFormat.format(inputFormat.parse(bugItem.bug.createdAt ?: "") ?: "")
-            binding.bugUpdatedAt.text = outputFormat.format(inputFormat.parse(bugItem.bug.updatedAt ?: "") ?: "")
+            binding.bugCreator.text = "Created by ${bugItem.bug.creator?.username}"
+            binding.bugCreatedAt.text = "Created: ${outputFormat.format(inputFormat.parse(bugItem.bug.createdAt ?: "") ?: "")}"
+            binding.bugUpdatedAt.text = "Updated: ${outputFormat.format(inputFormat.parse(bugItem.bug.updatedAt ?: "") ?: "")}"
         }
     }
 }

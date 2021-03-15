@@ -1,5 +1,6 @@
 package com.ben.bugtrackerclient.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -43,6 +44,7 @@ class HomeViewModel(private val bugRepository: BugRepository) : ViewModel() {
             delay(1000)
         }
         bugData?.let {
+            Log.d("Tag", "Bug Data: $it")
             _addBugResponse.value = bugRepository.onAddBug(bugData)
             onFetchBugs()
         }

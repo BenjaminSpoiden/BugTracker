@@ -1,4 +1,5 @@
-import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { User } from "./User";
 
 @Entity("bug")
 export class Bug extends BaseEntity {
@@ -19,6 +20,13 @@ export class Bug extends BaseEntity {
     @Column()
     priority: number
 
+    @ManyToOne(() => User, user => user.bugs)
+    @JoinColumn({name: "creatorId"})
+    creator: User
+
+    @Column({nullable: true})
+    creatorId?: string
+    
     @Column({default: false})
     is_completed: boolean
 

@@ -1,5 +1,6 @@
 package com.ben.bugtrackerclient.network
 
+import android.util.Log
 import com.ben.bugtrackerclient.BuildConfig
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -18,37 +19,25 @@ object BugTrackerNetwork {
             .create()
     }
 
-    private val client by lazy {
-        OkHttpClient
-                .Builder()
-                .also {
+    fun initializeRetrofit(accessToken: String? = null): BugTrackerService {
+        Log.d("Tag", "accessToken= $accessToken")
+        return Retrofit.Builder()
+            .client(OkHttpClient.Builder()
+                .addInterceptor { chain ->
+                    chain.proceed(chain.request()
+                        .newBuilder()
+                        .addHeader("Authorization", "Bearer $accessToken")
+                        .build())
+                }
+                .also { client ->
                     if(BuildConfig.DEBUG) {
                         val logging = HttpLoggingInterceptor()
                         logging.setLevel(HttpLoggingInterceptor.Level.BODY)
-                        it.addInterceptor(logging)
+                        client.addInterceptor(logging)
                     }
-                }.build()
-    }
-
-    fun initializeRetrofit(): BugTrackerService {
-        return Retrofit.Builder()
-//            .client(OkHttpClient.Builder()
-//                .addInterceptor { chain ->
-//                    chain.proceed(chain.request()
-//                        .newBuilder()
-//                        .addHeader("Authorization", "")
-//                        .build())
-//                }
-//                .also { client ->
-//                    if(BuildConfig.DEBUG) {
-//                        val logging = HttpLoggingInterceptor()
-//                        logging.setLevel(HttpLoggingInterceptor.Level.BODY)
-//                        client.addInterceptor(logging)
-//                    }
-//                }
-//                .build())
+                }
+                .build())
             .baseUrl("http://10.0.2.2:3000")
-            .client(client)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addConverterFactory(ScalarsConverterFactory.create())
             .build()

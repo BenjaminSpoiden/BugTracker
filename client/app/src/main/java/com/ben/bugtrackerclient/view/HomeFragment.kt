@@ -19,21 +19,24 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ben.bugtrackerclient.R
 import com.ben.bugtrackerclient.databinding.FragmentHomeBinding
-import com.ben.bugtrackerclient.model.Bug
-import com.ben.bugtrackerclient.model.BugRequest
-import com.ben.bugtrackerclient.model.CustomResponse
-import com.ben.bugtrackerclient.model.Priority
+import com.ben.bugtrackerclient.model.*
 import com.ben.bugtrackerclient.network.BugTrackerNetwork
 import com.ben.bugtrackerclient.network.BugTrackerService
 import com.ben.bugtrackerclient.network.ResponseHandler
+import com.ben.bugtrackerclient.network.UserPreference
 import com.ben.bugtrackerclient.repository.BugRepository
 import com.ben.bugtrackerclient.utils.enabled
+import com.ben.bugtrackerclient.utils.handleAPIError
 import com.ben.bugtrackerclient.utils.visible
 import com.ben.bugtrackerclient.view.adapter.BugAdapter
 import com.ben.bugtrackerclient.view.adapter.onItemClickListener
 import com.ben.bugtrackerclient.viewmodel.HomeViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kotlin.properties.Delegates
 
 class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugRepository>() {
@@ -45,11 +48,10 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugReposit
     private var priority: Int? = null
     private val bugAdapter = BugAdapter()
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.sendBugBtn.enabled(false)
-
-
         onSetupRecyclerView()
         setBottomSheetBehavior()
         val bottomSheetPriorityItems = listOf(Priority.LOW.name, Priority.MEDIUM.name, Priority.HIGH.name)
@@ -84,7 +86,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugReposit
         binding.bugTitleTextInput.addTextChangedListener(textWatcher)
         binding.bugDescTextInput.addTextChangedListener(textWatcher)
         binding.bugVersionTextInput.addTextChangedListener(textWatcher)
-
+        binding.bugVersionTextInput.addTextChangedListener(textWatcher)
         binding.bugPriorityTextInput.setOnItemClickListener { _, _, position, _ ->
             priority = Priority.valueOf(bottomSheetPriorityItems[position]).priority
 
@@ -99,11 +101,11 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugReposit
             viewModel.deleteBugResponse.collect {
                 when(it) {
                     is ResponseHandler.Success -> {
-                        Log.d("Tag", "${onConvertBodyToJson<CustomResponse>(it.value)}")
+                        Log.d("Tag", "${onConvertBodyToJson<ApiResponse>(it.value)}")
                     }
                     is ResponseHandler.Failure -> {
                         it.responseBody?.let { responseBody ->
-                            Log.d("Tag", "${onConvertBodyToJson<CustomResponse>(responseBody)}")
+                            handleAPIError(it, onConvertBodyToJson<ApiResponse>(responseBody)?.message)
                         }
                         it.message?.let { message ->
                             Log.d("Tag", message)
@@ -125,10 +127,11 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugReposit
                 when(it) {
                     is ResponseHandler.Success -> {
                         bugAdapter.onAddHeaderAndItems(it.value)
+
                     }
                     is ResponseHandler.Failure -> {
                         it.responseBody?.let { responseBody ->
-                            Log.d("Tag", "${onConvertBodyToJson<CustomResponse>(responseBody)}")
+                            Log.d("Tag", "${onConvertBodyToJson<ApiResponse>(responseBody)}")
                         }
                         it.message?.let { message ->
                             Log.d("Tag", message)
@@ -163,10 +166,9 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugReposit
                         binding.progressIndicator.visible(false)
                     }
                     is ResponseHandler.Failure -> {
-                        Log.d("Tag", "$it")
                         binding.progressIndicator.visible(false)
                         it.responseBody?.let { responseBody ->
-                            Log.d("Tag", "Failed: ${onConvertBodyToJson<CustomResponse>(responseBody)}")
+                            handleAPIError(it, onConvertBodyToJson<ApiResponse>(responseBody)?.message)
                         }
                         it.message?.let { message ->
                             Log.d("Tag", "message: $message")
@@ -180,6 +182,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugReposit
             }
         }
     }
+
 
     private fun setBottomSheetBehavior() {
         binding.expandSheetBtn.setOnClickListener {
@@ -225,13 +228,21 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugReposit
         onFetchBugs()
     }
 
+
+
     override fun onBindFragment(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): FragmentHomeBinding = FragmentHomeBinding.inflate(inflater, container, false)
 
-    override fun onBindRepository(): BugRepository = BugRepository(bugTrackerNetwork.initializeRetrofit())
+    override fun onBindRepository(): BugRepository {
+        val accessToken = runBlocking {
+                userPreference.accessTokenFlow.first()
+        }
+        Log.d("Tag", "TESTING IF THIS WORKS")
+        return BugRepository(bugTrackerNetwork.initializeRetrofit(accessToken))
+    }
 
     override fun onBindViewModel(): Class<HomeViewModel> = HomeViewModel::class.java
 }
