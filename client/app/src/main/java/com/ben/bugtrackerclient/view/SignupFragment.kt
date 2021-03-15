@@ -45,7 +45,6 @@ class SignupFragment : BaseFragment<LoginViewModel, FragmentSignupBinding, AuthR
                     }
                     is ResponseHandler.Loading -> Log.d("Test", "Loading...")
                     else -> {
-
                     }
                 }
             }
