@@ -1,6 +1,7 @@
 package com.ben.bugtrackerclient.view.adapter
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,9 +21,12 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
-var onItemClickListener: ((Int) -> Unit)? = null
-
 class BugAdapter: ListAdapter<DataItem, RecyclerView.ViewHolder>(BugDiffCallback()) {
+
+    companion object {
+        var onItemClickListener: ((Int) -> Unit)? = null
+        var onEditItemClickListener: ((Bug) -> Unit)? = null
+    }
 
     private val adapterScope = CoroutineScope(Dispatchers.Default)
 
@@ -82,26 +86,27 @@ class BugAdapter: ListAdapter<DataItem, RecyclerView.ViewHolder>(BugDiffCallback
             }
         }
 
-//        private val bugName: MaterialTextView = v.findViewById(R.id.bug_name)
-//        private val bugDesc: MaterialTextView = v.findViewById(R.id.bug_desc)
-//        private val bugCreatedAt: MaterialTextView = v.findViewById(R.id.bug_createdAt)
-//        private val bugUpdatedAt: MaterialTextView = v.findViewById(R.id.bug_updatedAt)
-//        private val bugVersion: MaterialTextView = v.findViewById(R.id.bug_version)
-
         @SuppressLint("SetTextI18n")
         fun onBind(bugItem: DataItem.BugItem, position: Int) {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.FRANCE)
-            val outputFormat = SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss", Locale.FRANCE)
+            val outputFormat = SimpleDateFormat("MM/DD/YYYY", Locale.FRANCE)
 
             binding.deleteBug.setOnClickListener {
-                bugItem.id?.toInt()?.let { it1 -> onItemClickListener?.invoke(it1) }
+                bugItem.id?.toInt()?.let { id ->
+                    onItemClickListener?.invoke(id)
+                }
+            }
+
+            binding.bugEdit.setOnClickListener {
+                onEditItemClickListener?.invoke(bugItem.bug)
             }
 
             binding.bugName.text = bugItem.bug.name
             binding.bugDesc.text = bugItem.bug.details
             binding.bugVersion.text = "Version: ${bugItem.bug.version}"
-            binding.bugCreatedAt.text = outputFormat.format(inputFormat.parse(bugItem.bug.createdAt ?: "") ?: "")
-            binding.bugUpdatedAt.text = outputFormat.format(inputFormat.parse(bugItem.bug.updatedAt ?: "") ?: "")
+            binding.bugCreator.text = "Created by ${bugItem.bug.creator?.username}"
+            binding.bugCreatedAt.text = "Created: ${outputFormat.format(inputFormat.parse(bugItem.bug.createdAt ?: "") ?: "")}"
+            binding.bugUpdatedAt.text = "Updated: ${outputFormat.format(inputFormat.parse(bugItem.bug.updatedAt ?: "") ?: "")}"
         }
     }
 }

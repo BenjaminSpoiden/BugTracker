@@ -9,7 +9,14 @@
         android:id="@+id/navigation_home"
         android:name="com.ben.bugtrackerclient.view.HomeFragment"
         android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_navigation_home_to_loginFragment"
+            app:destination="@id/loginFragment" />
+        <action
+            android:id="@+id/action_navigation_home_to_editBugFragment"
+            app:destination="@id/editBugFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_dashboard"
@@ -22,4 +29,36 @@
         android:name="com.ben.bugtrackerclient.view.NotificationsFragment"
         android:label="@string/title_notifications"
         tools:layout="@layout/fragment_notifications" />
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.ben.bugtrackerclient.view.LoginFragment"
+        android:label="Login"
+        tools:layout="@layout/fragment_login" >
+        <action
+            android:id="@+id/action_loginFragment_to_navigation_home"
+            app:destination="@id/navigation_home" />
+        <action
+            android:id="@+id/action_loginFragment_to_signupFragment"
+            app:destination="@id/signupFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/signupFragment"
+        android:name="com.ben.bugtrackerclient.view.SignupFragment"
+        android:label="Signup">
+        <action
+            android:id="@+id/action_signupFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+        <action
+            android:id="@+id/action_signupFragment_to_navigation_home"
+            app:destination="@id/navigation_home" />
+    </fragment>
+    <dialog
+        android:id="@+id/editBugFragment"
+        android:name="com.ben.bugtrackerclient.view.EditBugFragment"
+        android:label="fragment_edit_bug"
+        tools:layout="@layout/fragment_edit_bug" >
+        <action
+            android:id="@+id/action_editBugFragment_to_navigation_home"
+            app:destination="@id/navigation_home" />
+    </dialog>
 </navigation>

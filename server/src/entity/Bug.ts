@@ -1,4 +1,5 @@
-import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { AfterUpdate, BaseEntity, BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { User } from "./User";
 
 @Entity("bug")
 export class Bug extends BaseEntity {
@@ -13,12 +14,19 @@ export class Bug extends BaseEntity {
     @Column()
     details: string
 
-    @Column()
-    version: string
+    @Column({nullable: true})
+    version?: string
 
     @Column()
     priority: number
 
+    @ManyToOne(() => User, user => user.bugs)
+    @JoinColumn({name: "creatorId"})
+    creator: User
+
+    @Column({nullable: true})
+    creatorId?: string
+    
     @Column({default: false})
     is_completed: boolean
 
@@ -30,4 +38,5 @@ export class Bug extends BaseEntity {
 
     @UpdateDateColumn()
     updated_at: Date
+
 }
