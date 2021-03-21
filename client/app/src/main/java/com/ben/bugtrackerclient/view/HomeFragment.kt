@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.TextView
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -29,12 +30,12 @@ import com.ben.bugtrackerclient.utils.enabled
 import com.ben.bugtrackerclient.utils.handleAPIError
 import com.ben.bugtrackerclient.utils.visible
 import com.ben.bugtrackerclient.view.adapter.BugAdapter
-import com.ben.bugtrackerclient.view.adapter.onItemClickListener
 import com.ben.bugtrackerclient.viewmodel.HomeViewModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlin.properties.Delegates
@@ -60,6 +61,13 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugReposit
         onAddChangeListener(bottomSheetPriorityItems)
         onAddBug()
         onDeleteBug()
+
+        BugAdapter.onEditItemClickListener = {
+            val bugBundle = Bundle(1).apply {
+                putParcelable("bug", it)
+            }
+            findNavController().navigate(R.id.action_navigation_home_to_editBugFragment, bugBundle)
+        }
     }
 
     private fun onAddChangeListener(bottomSheetPriorityItems: List<String>) {
@@ -87,6 +95,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugReposit
         binding.bugDescTextInput.addTextChangedListener(textWatcher)
         binding.bugVersionTextInput.addTextChangedListener(textWatcher)
         binding.bugVersionTextInput.addTextChangedListener(textWatcher)
+        binding.bugVersionTextInput.addTextChangedListener(textWatcher)
         binding.bugPriorityTextInput.setOnItemClickListener { _, _, position, _ ->
             priority = Priority.valueOf(bottomSheetPriorityItems[position]).priority
 
@@ -94,7 +103,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugReposit
     }
 
     private fun onDeleteBug() {
-        onItemClickListener = {
+        BugAdapter.onItemClickListener = {
             viewModel.onDeleteBug(it)
         }
         lifecycleScope.launchWhenCreated {
@@ -122,7 +131,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugReposit
 
     private fun onFetchBugs() {
         viewModel.onFetchBugs()
-        lifecycleScope.launchWhenStarted {
+        lifecycleScope.launch {
             viewModel.bugList.collect {
                 when(it) {
                     is ResponseHandler.Success -> {
@@ -164,6 +173,11 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugReposit
                 when(it) {
                     is ResponseHandler.Success -> {
                         binding.progressIndicator.visible(false)
+                        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                        binding.bugTitleTextInput.setText("")
+                        binding.bugDescTextInput.setText("")
+                        binding.bugVersionTextInput.setText("")
+                        binding.bugPriorityTextInput.setText("")
                     }
                     is ResponseHandler.Failure -> {
                         binding.progressIndicator.visible(false)
@@ -196,13 +210,20 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugReposit
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 when(newState) {
                     BottomSheetBehavior.STATE_COLLAPSED -> {
-                        Log.d("Tag", "Collapsed")
+                        binding.expandSheetBtn.setImageResource(R.drawable.ic_baseline_keyboard_arrow_up_24)
+                        binding.expandSheetBtn.setOnClickListener {
+                            bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                        }
                     }
                     BottomSheetBehavior.STATE_DRAGGING -> {
                         Log.d("Tag", "Dragging")
                     }
                     BottomSheetBehavior.STATE_EXPANDED -> {
                         Log.d("Tag", "Expanded")
+                        binding.expandSheetBtn.setImageResource(R.drawable.ic_baseline_keyboard_arrow_down_24)
+                        binding.expandSheetBtn.setOnClickListener {
+                            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                        }
                     }
                     BottomSheetBehavior.STATE_HALF_EXPANDED -> {
                         Log.d("Tag", "Half Expanded")
@@ -237,7 +258,7 @@ class HomeFragment : BaseFragment<HomeViewModel, FragmentHomeBinding, BugReposit
     ): FragmentHomeBinding = FragmentHomeBinding.inflate(inflater, container, false)
 
     override fun onBindRepository(): BugRepository {
-        val accessToken = runBlocking {
+        val accessToken = runBlocking(Dispatchers.IO) {
                 userPreference.accessTokenFlow.first()
         }
         Log.d("Tag", "TESTING IF THIS WORKS")

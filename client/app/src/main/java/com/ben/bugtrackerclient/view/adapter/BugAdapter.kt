@@ -21,9 +21,12 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
-var onItemClickListener: ((Int) -> Unit)? = null
-
 class BugAdapter: ListAdapter<DataItem, RecyclerView.ViewHolder>(BugDiffCallback()) {
+
+    companion object {
+        var onItemClickListener: ((Int) -> Unit)? = null
+        var onEditItemClickListener: ((Bug) -> Unit)? = null
+    }
 
     private val adapterScope = CoroutineScope(Dispatchers.Default)
 
@@ -83,19 +86,19 @@ class BugAdapter: ListAdapter<DataItem, RecyclerView.ViewHolder>(BugDiffCallback
             }
         }
 
-//        private val bugName: MaterialTextView = v.findViewById(R.id.bug_name)
-//        private val bugDesc: MaterialTextView = v.findViewById(R.id.bug_desc)
-//        private val bugCreatedAt: MaterialTextView = v.findViewById(R.id.bug_createdAt)
-//        private val bugUpdatedAt: MaterialTextView = v.findViewById(R.id.bug_updatedAt)
-//        private val bugVersion: MaterialTextView = v.findViewById(R.id.bug_version)
-
         @SuppressLint("SetTextI18n")
         fun onBind(bugItem: DataItem.BugItem, position: Int) {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.FRANCE)
             val outputFormat = SimpleDateFormat("MM/DD/YYYY", Locale.FRANCE)
 
             binding.deleteBug.setOnClickListener {
-                bugItem.id?.toInt()?.let { it1 -> onItemClickListener?.invoke(it1) }
+                bugItem.id?.toInt()?.let { id ->
+                    onItemClickListener?.invoke(id)
+                }
+            }
+
+            binding.bugEdit.setOnClickListener {
+                onEditItemClickListener?.invoke(bugItem.bug)
             }
 
             binding.bugName.text = bugItem.bug.name

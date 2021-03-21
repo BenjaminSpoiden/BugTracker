@@ -185,11 +185,12 @@
             android:layout_marginStart="8dp"
             android:text="Report a bug"
             android:textColor="@color/white"
-            android:textStyle="bold"
             android:textSize="18sp"
+            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="@+id/warning_view"
             app:layout_constraintStart_toEndOf="@+id/warning_view"
-            app:layout_constraintTop_toTopOf="@+id/warning_view" />
+            app:layout_constraintTop_toTopOf="@+id/warning_view"
+            app:layout_constraintVertical_bias="0.0" />
 
         <ImageView
             android:id="@+id/expand_sheet_btn"

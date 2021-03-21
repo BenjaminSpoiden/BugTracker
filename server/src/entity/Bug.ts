@@ -1,4 +1,4 @@
-import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { AfterUpdate, BaseEntity, BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { User } from "./User";
 
 @Entity("bug")
@@ -14,8 +14,8 @@ export class Bug extends BaseEntity {
     @Column()
     details: string
 
-    @Column()
-    version: string
+    @Column({nullable: true})
+    version?: string
 
     @Column()
     priority: number
@@ -38,4 +38,5 @@ export class Bug extends BaseEntity {
 
     @UpdateDateColumn()
     updated_at: Date
+
 }

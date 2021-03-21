@@ -36,6 +36,9 @@ class HomeViewModel(private val bugRepository: BugRepository) : ViewModel() {
 
     fun onFetchBugs() = viewModelScope.launch {
         _bugList.value = ResponseHandler.Loading
+        withContext(Dispatchers.IO) {
+            delay(1000)
+        }
         _bugList.value = bugRepository.onFetchBugs()
     }
     fun onAddBug(bugData: BugRequest?) = viewModelScope.launch {

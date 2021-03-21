@@ -28,8 +28,7 @@ class UserPreference(context: Context) {
             it[AUTH_TOKEN_KEY]
         }
 
-    private val appContext = context.applicationContext
-    private val dataStore = appContext.dataStore
+    private val dataStore: DataStore<Preferences> = context.dataStore
 
 
 }

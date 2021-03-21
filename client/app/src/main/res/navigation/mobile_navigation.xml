@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_navigation_home_to_loginFragment"
             app:destination="@id/loginFragment" />
+        <action
+            android:id="@+id/action_navigation_home_to_editBugFragment"
+            app:destination="@id/editBugFragment" />
     </fragment>
 
     <fragment
@@ -49,4 +52,13 @@
             android:id="@+id/action_signupFragment_to_navigation_home"
             app:destination="@id/navigation_home" />
     </fragment>
+    <dialog
+        android:id="@+id/editBugFragment"
+        android:name="com.ben.bugtrackerclient.view.EditBugFragment"
+        android:label="fragment_edit_bug"
+        tools:layout="@layout/fragment_edit_bug" >
+        <action
+            android:id="@+id/action_editBugFragment_to_navigation_home"
+            app:destination="@id/navigation_home" />
+    </dialog>
 </navigation>

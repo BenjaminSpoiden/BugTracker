@@ -63,7 +63,7 @@ export const updateBug = async (req: Request, res: Response) => {
     const data = req.body as Bug
 
     try{
-        await Bug.update({ id }, data)
+        await Bug.update({ id }, {...data})
         res.status(200).json({
             status: "Success",
             message: "Bug successfully modified"
